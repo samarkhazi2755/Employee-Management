@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Add Employee</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --surface: #13131c;
+            --surface2: #1c1c2e;
+            --accent: #6c63ff;
+            --accent2: #ff6584;
+            --accent3: #43e97b;
+            --text: #e8e8f0;
+            --muted: #6b6b8a;
+            --border: rgba(108, 99, 255, 0.2);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Animated background */
+        .bg-orbs {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.15;
+            animation: orbFloat linear infinite;
+        }
+
+        .orb-1 {
+            width: 500px; height: 500px;
+            background: var(--accent);
+            top: -100px; left: -100px;
+            animation-duration: 20s;
+        }
+
+        .orb-2 {
+            width: 400px; height: 400px;
+            background: var(--accent2);
+            bottom: -100px; right: -100px;
+            animation-duration: 25s;
+            animation-direction: reverse;
+        }
+
+        .orb-3 {
+            width: 300px; height: 300px;
+            background: var(--accent3);
+            top: 50%; left: 50%;
+            animation-duration: 15s;
+        }
+
+        @keyframes orbFloat {
+            0% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(30px, -30px) scale(1.05); }
+            50% { transform: translate(-20px, 40px) scale(0.95); }
+            75% { transform: translate(40px, 20px) scale(1.08); }
+            100% { transform: translate(0, 0) scale(1); }
+        }
+
+        /* Grid lines */
+        .grid {
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(108,99,255,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(108,99,255,0.04) 1px, transparent 1px);
+            background-size: 60px 60px;
+            z-index: 0;
+        }
+
+        /* Main card */
+        .card-wrapper {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 520px;
+            padding: 20px;
+            animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-label {
+            font-family: 'Syne', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: slideUp 0.8s 0.1s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .card-label::before {
+            content: '';
+            width: 20px; height: 2px;
+            background: var(--accent);
+        }
+
+        h2 {
+            font-family: 'Syne', sans-serif;
+            font-size: 38px;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 32px;
+            background: linear-gradient(135deg, #fff 40%, var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: slideUp 0.8s 0.15s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        form {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 36px;
+            position: relative;
+            overflow: hidden;
+            animation: slideUp 0.8s 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+            backdrop-filter: blur(20px);
+        }
+
+        form::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+        }
+
+        /* Progress dots */
+        .progress {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 28px;
+        }
+
+        .dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--border);
+            transition: all 0.3s;
+        }
+
+        .dot.active {
+            width: 24px;
+            border-radius: 3px;
+            background: var(--accent);
+        }
+
+        /* Field group */
+        .field {
+            margin-bottom: 20px;
+            position: relative;
+            animation: slideUp 0.6s both;
+        }
+
+        .field:nth-child(1) { animation-delay: 0.3s; }
+        .field:nth-child(2) { animation-delay: 0.37s; }
+        .field:nth-child(3) { animation-delay: 0.44s; }
+        .field:nth-child(4) { animation-delay: 0.51s; }
+
+        label {
+            display: block;
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 8px;
+            transition: color 0.3s;
+        }
+
+        .field:focus-within label {
+            color: var(--accent);
+        }
+
+        .input-wrap {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted);
+            font-size: 16px;
+            pointer-events: none;
+            transition: color 0.3s;
+            z-index: 1;
+        }
+
+        .field:focus-within .input-icon {
+            color: var(--accent);
+        }
+
+        input, select {
+            width: 100%;
+            padding: 14px 14px 14px 42px;
+            background: var(--surface2);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        input::placeholder {
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--accent);
+            background: rgba(108, 99, 255, 0.08);
+            box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.12),
+                        0 0 20px rgba(108, 99, 255, 0.08);
+            transform: translateY(-1px);
+        }
+
+        select option {
+            background: #1c1c2e;
+        }
+
+        /* Floating label shimmer on focus */
+        .input-shimmer {
+            position: absolute;
+            inset: 0;
+            border-radius: 12px;
+            pointer-events: none;
+            background: linear-gradient(90deg, transparent 0%, rgba(108,99,255,0.05) 50%, transparent 100%);
+            background-size: 200% 100%;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        input:focus ~ .input-shimmer,
+        select:focus ~ .input-shimmer {
+            opacity: 1;
+            animation: shimmer 2s linear infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Divider */
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+            margin: 24px 0;
+        }
+
+        /* Actions */
+        .actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            animation: slideUp 0.6s 0.58s both;
+        }
+
+        button {
+            flex: 1;
+            padding: 15px 24px;
+            background: linear-gradient(135deg, var(--accent), #9b59ff);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-family: 'Syne', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            letter-spacing: 0.02em;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(108, 99, 255, 0.4);
+        }
+
+        button:hover::before { opacity: 1; }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button .btn-text {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        /* Ripple */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transform: scale(0);
+            animation: rippleAnim 0.6s linear;
+            pointer-events: none;
+        }
+
+        @keyframes rippleAnim {
+            to { transform: scale(4); opacity: 0; }
+        }
+
+        a {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 14px;
+            padding: 15px 18px;
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        a:hover {
+            color: var(--text);
+            border-color: rgba(255,255,255,0.15);
+            background: var(--surface2);
+        }
+
+        /* Success state overlay */
+        .success-overlay {
+            position: absolute;
+            inset: 0;
+            border-radius: 24px;
+            background: rgba(67, 233, 123, 0.08);
+            border: 1px solid rgba(67, 233, 123, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s;
+            z-index: 20;
+            backdrop-filter: blur(4px);
+        }
+
+        .success-overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .success-icon {
+            width: 64px; height: 64px;
+            border-radius: 50%;
+            background: rgba(67, 233, 123, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            animation: popIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0); }
+            to { transform: scale(1); }
+        }
+
+        .success-text {
+            font-family: 'Syne', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--accent3);
+        }
+
+        /* Floating particles on submit */
+        .particle {
+            position: fixed;
+            pointer-events: none;
+            border-radius: 50%;
+            animation: particleAnim 1s ease-out forwards;
+            z-index: 100;
+        }
+
+        @keyframes particleAnim {
+            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+        }
+
+        /* Select arrow */
+        .select-wrap::after {
+            content: '↓';
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted);
+            pointer-events: none;
+            font-size: 12px;
+        }
+
+        .select-wrap { position: relative; }
+    </style>
+</head>
+
+<body>
+    <div class="bg-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+    <div class="grid"></div>
+
+    <div class="card-wrapper">
+        <div class="card-label">HR Management</div>
+        <h2>Add Employee</h2>
+
+        <form method="POST" id="employeeForm">
+            <div class="progress">
+                <div class="dot active"></div>
+                <div class="dot" id="dot2"></div>
+                <div class="dot" id="dot3"></div>
+                <div class="dot" id="dot4"></div>
+            </div>
+
+            <div class="field">
+                <label>Full Name</label>
+                <div class="input-wrap">
+                    <span class="input-icon">👤</span>
+                    <input type="text" name="name" placeholder="e.g. Alex Johnson" required>
+                    <div class="input-shimmer"></div>
+                </div>
+            </div>
+
+            <div class="field">
+                <label>Email Address</label>
+                <div class="input-wrap">
+                    <span class="input-icon">✉️</span>
+                    <input type="email" name="email" placeholder="alex@company.com" required>
+                    <div class="input-shimmer"></div>
+                </div>
+            </div>
+
+            <div class="field">
+                <label>Phone Number</label>
+                <div class="input-wrap">
+                    <span class="input-icon">📞</span>
+                    <input type="text" name="phone" placeholder="+1 (555) 000-0000" required>
+                    <div class="input-shimmer"></div>
+                </div>
+            </div>
+
+            <div class="field">
+                <label>Department</label>
+                <div class="input-wrap select-wrap">
+                    <span class="input-icon">🏢</span>
+                    <select name="department_id" required>
+                        <option value="">Select Department</option>
+                        {% for dept in departments %}
+                        <option value="{{ dept[0] }}">{{ dept[1] }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="input-shimmer"></div>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="actions">
+                <button type="submit" id="submitBtn">
+                    <span class="btn-text">
+                        <span>Save Employee</span>
+                        <span>→</span>
+                    </span>
+                </button>
+                <a href="/">← Back</a>
+            </div>
+
+            <div class="success-overlay" id="successOverlay">
+                <div class="success-icon">✓</div>
+                <div class="success-text">Employee Added!</div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Progress dots based on filled fields
+        const inputs = document.querySelectorAll('input, select');
+        const dots = [document.querySelector('.dot'), document.getElementById('dot2'), document.getElementById('dot3'), document.getElementById('dot4')];
+
+        function updateProgress() {
+            let filled = 0;
+            inputs.forEach(i => { if (i.value) filled++; });
+            dots.forEach((d, idx) => {
+                d.classList.toggle('active', idx <= filled - 1 || idx === 0);
+            });
+        }
+
+        inputs.forEach(input => input.addEventListener('input', updateProgress));
+
+        // Ripple on button
+        document.getElementById('submitBtn').addEventListener('click', function(e) {
+            const btn = this;
+            const rect = btn.getBoundingClientRect();
+            const r = document.createElement('span');
+            r.classList.add('ripple');
+            r.style.cssText = `width:${rect.width}px;height:${rect.width}px;left:${e.clientX - rect.left - rect.width/2}px;top:${e.clientY - rect.top - rect.width/2}px`;
+            btn.appendChild(r);
+            setTimeout(() => r.remove(), 600);
+
+            // Particles
+            const colors = ['#6c63ff','#ff6584','#43e97b','#ffd700'];
+            for (let i = 0; i < 20; i++) {
+                const p = document.createElement('div');
+                p.classList.add('particle');
+                const angle = (i / 20) * 360;
+                const dist = 80 + Math.random() * 120;
+                p.style.cssText = `
+                    width:${4 + Math.random() * 6}px;
+                    height:${4 + Math.random() * 6}px;
+                    left:${e.clientX}px;
+                    top:${e.clientY}px;
+                    background:${colors[i % colors.length]};
+                    --tx:${Math.cos(angle * Math.PI/180) * dist}px;
+                    --ty:${Math.sin(angle * Math.PI/180) * dist}px;
+                    animation-duration:${0.6 + Math.random() * 0.4}s;
+                `;
+                document.body.appendChild(p);
+                setTimeout(() => p.remove(), 1000);
+            }
+        });
+
+        // Demo success animation (remove if using real POST)
+        document.getElementById('employeeForm').addEventListener('submit', function(e) {
+            // Remove this block if you want normal form submission
+            // e.preventDefault();
+            // document.getElementById('successOverlay').classList.add('show');
+        });
+    </script>
+</body>
+</html>

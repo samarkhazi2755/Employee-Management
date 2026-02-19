@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HR Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --surface: #13131c;
+            --surface2: #1c1c2e;
+            --accent: #6c63ff;
+            --accent-blue: #007bff;
+            --accent2: #ff6584;
+            --accent3: #43e97b;
+            --accent-warn: #ff9f43;
+            --text: #e8e8f0;
+            --muted: #6b6b8a;
+            --border: rgba(108, 99, 255, 0.2);
+            --row-hover: rgba(108, 99, 255, 0.06);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ─── SHARED BACKGROUND ─── */
+        .bg-orbs { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+        .orb {
+            position: absolute; border-radius: 50%;
+            filter: blur(90px); opacity: 0.12;
+            animation: orbFloat linear infinite;
+        }
+        .orb-1 { width: 600px; height: 600px; background: var(--accent); top: -150px; left: -150px; animation-duration: 22s; }
+        .orb-2 { width: 450px; height: 450px; background: var(--accent-blue); bottom: -100px; right: -100px; animation-duration: 28s; animation-direction: reverse; }
+        .orb-3 { width: 300px; height: 300px; background: var(--accent3); top: 50%; left: 55%; animation-duration: 18s; }
+
+        @keyframes orbFloat {
+            0%   { transform: translate(0,0) scale(1); }
+            25%  { transform: translate(30px,-30px) scale(1.05); }
+            50%  { transform: translate(-20px,40px) scale(0.95); }
+            75%  { transform: translate(40px,20px) scale(1.08); }
+            100% { transform: translate(0,0) scale(1); }
+        }
+
+        .grid {
+            position: fixed; inset: 0;
+            background-image:
+                linear-gradient(rgba(108,99,255,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(108,99,255,0.04) 1px, transparent 1px);
+            background-size: 60px 60px;
+            z-index: 0;
+        }
+
+        /* ─── PAGE SYSTEM ─── */
+        .page { display: none; }
+        .page.active { display: flex; }
+
+        /* ─── AUTH PAGES ─── */
+        #loginPage, #signupPage {
+            min-height: 100vh;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 10;
+            padding: 24px;
+        }
+
+        .auth-card {
+            width: 100%;
+            max-width: 440px;
+            animation: slideUp 0.7s cubic-bezier(0.16,1,0.3,1) both;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(32px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .auth-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 36px;
+        }
+
+        .logo-icon {
+            width: 40px; height: 40px;
+            background: linear-gradient(135deg, var(--accent), #9b59ff);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px;
+        }
+
+        .logo-text {
+            font-family: 'Syne', sans-serif;
+            font-size: 18px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff 40%, var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .auth-eyebrow {
+            font-family: 'Syne', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 10px;
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        .auth-eyebrow::before { content: ''; width: 20px; height: 2px; background: var(--accent); }
+
+        .auth-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 36px;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 32px;
+            background: linear-gradient(135deg, #fff 40%, var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .auth-form {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 36px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .auth-form::before {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+        }
+
+        .field { margin-bottom: 20px; }
+
+        .field label {
+            display: block;
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 8px;
+            transition: color 0.3s;
+        }
+
+        .field:focus-within label { color: var(--accent); }
+
+        .input-wrap { position: relative; }
+
+        .input-icon {
+            position: absolute; left: 14px; top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px; color: var(--muted);
+            pointer-events: none; transition: color 0.3s; z-index: 1;
+        }
+
+        .field:focus-within .input-icon { color: var(--accent); }
+
+        .auth-form input {
+            width: 100%;
+            padding: 14px 14px 14px 44px;
+            background: var(--surface2);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
+        }
+
+        .auth-form input::placeholder { color: var(--muted); font-size: 14px; }
+
+        .auth-form input:focus {
+            border-color: var(--accent);
+            background: rgba(108,99,255,0.08);
+            box-shadow: 0 0 0 3px rgba(108,99,255,0.12);
+            transform: translateY(-1px);
+        }
+
+        .auth-error {
+            background: rgba(255,101,132,0.1);
+            border: 1px solid rgba(255,101,132,0.3);
+            border-radius: 10px;
+            padding: 12px 16px;
+            font-size: 13px;
+            color: var(--accent2);
+            margin-bottom: 20px;
+            display: none;
+            animation: shakeX 0.4s ease;
+        }
+
+        .auth-error.show { display: flex; align-items: center; gap: 8px; }
+
+        @keyframes shakeX {
+            0%, 100% { transform: translateX(0); }
+            20%       { transform: translateX(-6px); }
+            40%       { transform: translateX(6px); }
+            60%       { transform: translateX(-4px); }
+            80%       { transform: translateX(4px); }
+        }
+
+        .auth-success {
+            background: rgba(67,233,123,0.1);
+            border: 1px solid rgba(67,233,123,0.3);
+            border-radius: 10px;
+            padding: 12px 16px;
+            font-size: 13px;
+            color: var(--accent3);
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .auth-success.show { display: flex; align-items: center; gap: 8px; }
+
+        .divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent); margin: 24px 0; }
+
+        .btn-primary {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--accent), #9b59ff);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-family: 'Syne', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
+            letter-spacing: 0.02em;
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+            opacity: 0; transition: opacity 0.3s;
+        }
+
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(108,99,255,0.4); }
+        .btn-primary:hover::before { opacity: 1; }
+        .btn-primary:active { transform: translateY(0); }
+
+        .btn-text-inner { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; gap: 8px; }
+
+        .ripple {
+            position: absolute; border-radius: 50%;
+            background: rgba(255,255,255,0.25);
+            transform: scale(0);
+            animation: rippleAnim 0.6s linear;
+            pointer-events: none;
+        }
+
+        @keyframes rippleAnim { to { transform: scale(4); opacity: 0; } }
+
+        .auth-switch {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: var(--muted);
+        }
+
+        .auth-switch button {
+            background: none; border: none;
+            color: var(--accent);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: underline;
+            padding: 0;
+        }
+
+        .auth-switch button:hover { color: #fff; }
+
+        /* Password strength */
+        .strength-bar { display: flex; gap: 4px; margin-top: 8px; }
+        .strength-seg {
+            flex: 1; height: 3px; border-radius: 2px;
+            background: rgba(255,255,255,0.08);
+            transition: background 0.3s;
+        }
+        .strength-seg.weak   { background: var(--accent2); }
+        .strength-seg.fair   { background: var(--accent-warn); }
+        .strength-seg.strong { background: var(--accent3); }
+
+        .strength-label {
+            font-size: 11px; color: var(--muted);
+            margin-top: 5px; text-align: right;
+            transition: color 0.3s;
+        }
+
+        /* ─── MAIN PAGE ─── */
+        #mainPage {
+            min-height: 100vh;
+            flex-direction: column;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Top nav */
+        .topnav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 40px;
+            background: rgba(19,19,28,0.8);
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(16px);
+            position: sticky; top: 0; z-index: 50;
+            animation: slideDown 0.6s cubic-bezier(0.16,1,0.3,1) both;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .nav-logo {
+            display: flex; align-items: center; gap: 10px;
+            font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 800;
+            background: linear-gradient(135deg, #fff 40%, var(--accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        .nav-logo-icon {
+            width: 32px; height: 32px;
+            background: linear-gradient(135deg, var(--accent), #9b59ff);
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px;
+        }
+
+        .nav-user {
+            display: flex; align-items: center; gap: 12px;
+        }
+
+        .nav-user-name {
+            font-size: 13px; color: var(--muted);
+        }
+
+        .nav-user-name span { color: var(--text); font-weight: 500; }
+
+        .btn-logout {
+            display: flex; align-items: center; gap: 6px;
+            padding: 8px 16px;
+            background: rgba(255,101,132,0.08);
+            border: 1px solid rgba(255,101,132,0.2);
+            border-radius: 8px;
+            color: var(--accent2);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px; font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-logout:hover { background: rgba(255,101,132,0.18); border-color: rgba(255,101,132,0.4); }
+
+        /* Main content */
+        .main-content {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 48px 24px 80px;
+            width: 100%;
+        }
+
+        .page-label {
+            font-family: 'Syne', sans-serif;
+            font-size: 11px; font-weight: 700;
+            letter-spacing: 0.2em; text-transform: uppercase;
+            color: var(--accent); margin-bottom: 12px;
+            display: flex; align-items: center; gap: 8px;
+            animation: slideUp 0.7s 0.05s cubic-bezier(0.16,1,0.3,1) both;
+        }
+
+        .page-label::before { content: ''; width: 20px; height: 2px; background: var(--accent); }
+
+        .header-row {
+            display: flex; align-items: flex-end;
+            justify-content: space-between;
+            margin-bottom: 36px; gap: 16px; flex-wrap: wrap;
+            animation: slideUp 0.7s 0.1s cubic-bezier(0.16,1,0.3,1) both;
+        }
+
+        h2 {
+            font-family: 'Syne', sans-serif;
+            font-size: 42px; font-weight: 800; line-height: 1.1;
+            background: linear-gradient(135deg, #fff 40%, var(--accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        .stats-row {
+            display: flex; gap: 12px; margin-bottom: 28px; flex-wrap: wrap;
+            animation: slideUp 0.7s 0.18s cubic-bezier(0.16,1,0.3,1) both;
+        }
+
+        .stat-chip {
+            display: flex; align-items: center; gap: 8px;
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 50px; padding: 8px 16px;
+            font-size: 13px; color: var(--muted);
+        }
+
+        .stat-chip strong { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; color: var(--text); }
+
+        .stat-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--accent3);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.7); }
+        }
+
+        .btn-add {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 13px 22px;
+            background: linear-gradient(135deg, var(--accent), #9b59ff);
+            color: white; text-decoration: none;
+            border-radius: 12px;
+            font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700;
+            letter-spacing: 0.02em; border: none; cursor: pointer;
+            position: relative; overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
+            white-space: nowrap;
+        }
+
+        .btn-add::before {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+            opacity: 0; transition: opacity 0.3s;
+        }
+
+        .btn-add:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(108,99,255,0.4); text-decoration: none; }
+        .btn-add:hover::before { opacity: 1; }
+
+        /* Flash */
+        .flash-messages { margin-bottom: 24px; animation: slideUp 0.5s cubic-bezier(0.16,1,0.3,1) both; }
+
+        .alert {
+            display: flex; align-items: center; gap: 10px;
+            padding: 14px 18px; border-radius: 12px; margin-bottom: 10px;
+            font-size: 14px; font-weight: 500;
+            transition: opacity 0.6s ease, transform 0.6s ease;
+            animation: alertIn 0.5s cubic-bezier(0.16,1,0.3,1);
+        }
+
+        @keyframes alertIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .alert.fade-out { opacity: 0; transform: translateY(-6px); }
+        .alert-success { background: rgba(67,233,123,0.1); border: 1px solid rgba(67,233,123,0.3); color: var(--accent3); }
+        .alert-error   { background: rgba(255,101,132,0.1); border: 1px solid rgba(255,101,132,0.3); color: var(--accent2); }
+
+        /* Search */
+        .search-wrap {
+            position: relative; margin-bottom: 20px;
+            animation: slideUp 0.7s 0.22s cubic-bezier(0.16,1,0.3,1) both;
+        }
+
+        .search-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 15px; pointer-events: none; }
+
+        #searchInput {
+            width: 100%; padding: 13px 16px 13px 44px;
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 12px; color: var(--text);
+            font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none;
+            transition: all 0.3s;
+        }
+
+        #searchInput::placeholder { color: var(--muted); }
+
+        #searchInput:focus {
+            border-color: var(--accent); background: rgba(108,99,255,0.06);
+            box-shadow: 0 0 0 3px rgba(108,99,255,0.12);
+        }
+
+        /* Table */
+        .table-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 20px; overflow: hidden;
+            animation: slideUp 0.7s 0.26s cubic-bezier(0.16,1,0.3,1) both;
+            position: relative;
+        }
+
+        .table-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+        }
+
+        table { width: 100%; border-collapse: collapse; }
+
+        thead tr { border-bottom: 1px solid var(--border); }
+
+        th {
+            padding: 14px 18px; text-align: left;
+            font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700;
+            letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted);
+            background: transparent; cursor: pointer; user-select: none;
+            white-space: nowrap; transition: color 0.2s;
+        }
+
+        th:hover { color: var(--text); }
+
+        th .sort-icon { display: inline-block; margin-left: 4px; opacity: 0.4; font-size: 10px; }
+        th.sort-asc .sort-icon, th.sort-desc .sort-icon { opacity: 1; color: var(--accent); }
+
+        tbody tr {
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            transition: background 0.2s; animation: rowIn 0.5s both;
+        }
+
+        @keyframes rowIn {
+            from { opacity: 0; transform: translateX(-12px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+
+        tbody tr:hover { background: var(--row-hover); }
+        tbody tr:last-child { border-bottom: none; }
+
+        td { padding: 14px 18px; font-size: 14px; color: var(--text); vertical-align: middle; }
+
+        .id-chip {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 32px; height: 32px;
+            background: rgba(108,99,255,0.12); border: 1px solid rgba(108,99,255,0.2);
+            border-radius: 8px; font-family: 'Syne', sans-serif;
+            font-size: 12px; font-weight: 700; color: var(--accent);
+        }
+
+        .name-cell { display: flex; align-items: center; gap: 10px; }
+
+        .avatar {
+            width: 34px; height: 34px; border-radius: 10px;
+            background: linear-gradient(135deg, var(--accent), #9b59ff);
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700;
+            color: white; flex-shrink: 0;
+        }
+
+        .dept-badge {
+            display: inline-flex; align-items: center;
+            padding: 4px 10px;
+            background: rgba(0,123,255,0.1); border: 1px solid rgba(0,123,255,0.2);
+            border-radius: 20px; font-size: 12px; color: #3d9bff; font-weight: 500;
+        }
+
+        .actions-cell { display: flex; align-items: center; gap: 6px; }
+
+        .action-btn {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 7px 13px; border-radius: 8px; font-size: 12px; font-weight: 600;
+            text-decoration: none; transition: all 0.2s; border: 1px solid transparent; white-space: nowrap;
+        }
+
+        .action-btn.edit { color: var(--accent); background: rgba(108,99,255,0.08); border-color: rgba(108,99,255,0.15); }
+        .action-btn.edit:hover { background: rgba(108,99,255,0.18); border-color: rgba(108,99,255,0.35); transform: translateY(-1px); text-decoration: none; }
+        .action-btn.delete { color: var(--accent2); background: rgba(255,101,132,0.08); border-color: rgba(255,101,132,0.15); }
+        .action-btn.delete:hover { background: rgba(255,101,132,0.18); border-color: rgba(255,101,132,0.35); transform: translateY(-1px); text-decoration: none; }
+
+        .no-results-row td { text-align: center; color: var(--muted); padding: 40px; font-size: 14px; }
+
+        .empty-state {
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; padding: 72px 24px; text-align: center;
+            animation: slideUp 0.7s 0.3s cubic-bezier(0.16,1,0.3,1) both;
+        }
+
+        .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.4; }
+        .empty-title { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+        .empty-sub { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(6px); z-index: 100;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s;
+        }
+
+        .modal-overlay.show { opacity: 1; pointer-events: all; }
+
+        .modal {
+            background: var(--surface); border: 1px solid rgba(255,101,132,0.25);
+            border-radius: 20px; padding: 36px; max-width: 380px; width: 90%;
+            text-align: center; transform: scale(0.9) translateY(20px);
+            transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
+            position: relative; overflow: hidden;
+        }
+
+        .modal::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent2), transparent);
+        }
+
+        .modal-overlay.show .modal { transform: scale(1) translateY(0); }
+
+        .modal-icon { font-size: 40px; margin-bottom: 16px; display: block; }
+        .modal-title { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+        .modal-sub { color: var(--muted); font-size: 14px; margin-bottom: 28px; line-height: 1.6; }
+        .modal-actions { display: flex; gap: 10px; }
+
+        .btn-cancel {
+            flex: 1; padding: 13px; background: var(--surface2);
+            border: 1px solid rgba(255,255,255,0.08); border-radius: 10px;
+            color: var(--muted); font-family: 'DM Sans', sans-serif;
+            font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+        }
+
+        .btn-cancel:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+
+        .btn-confirm-delete {
+            flex: 1; padding: 13px;
+            background: linear-gradient(135deg, #c0392b, #ff6584);
+            border: none; border-radius: 10px; color: white;
+            font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700;
+            cursor: pointer; transition: all 0.2s; text-decoration: none;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .btn-confirm-delete:hover { box-shadow: 0 6px 24px rgba(255,101,132,0.4); transform: translateY(-1px); }
+
+        /* Loading spinner on button */
+        .btn-spinner {
+            display: none;
+            width: 18px; height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Sample data table rows (demo) */
+        .demo-note {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 12px;
+            color: var(--muted);
+            text-align: center;
+            padding: 10px;
+            border-top: 1px solid var(--border);
+            background: rgba(108,99,255,0.03);
+        }
+    </style>
+</head>
+<body>
+    <!-- Background (shared) -->
+    <div class="bg-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+    <div class="grid"></div>
+
+    <!-- ══════════════════════════════════════
+         LOGIN PAGE
+    ══════════════════════════════════════ -->
+    <div id="loginPage" class="page active">
+        <div class="auth-card">
+            <div class="auth-logo">
+                <div class="logo-icon">👥</div>
+                <div class="logo-text">HRManage</div>
+            </div>
+
+            <div class="auth-eyebrow">Welcome Back</div>
+            <div class="auth-title">Sign in to<br>your account</div>
+
+            <div class="auth-form">
+                <div class="auth-error" id="loginError">⚠️ Invalid email or password</div>
+
+                <div class="field">
+                    <label>Email Address</label>
+                    <div class="input-wrap">
+                        <span class="input-icon">✉️</span>
+                        <input type="email" id="loginEmail" placeholder="you@company.com" autocomplete="email">
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label>Password</label>
+                    <div class="input-wrap">
+                        <span class="input-icon">🔒</span>
+                        <input type="password" id="loginPassword" placeholder="Enter your password" autocomplete="current-password">
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <button class="btn-primary" id="loginBtn" onclick="handleLogin(event)">
+                    <div class="btn-text-inner">
+                        <div class="btn-spinner" id="loginSpinner"></div>
+                        <span id="loginBtnText">Sign In →</span>
+                    </div>
+                </button>
+
+                <div class="auth-switch">
+                    Don't have an account?
+                    <button onclick="showPage('signupPage')">Create one</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         SIGNUP PAGE
+    ══════════════════════════════════════ -->
+    <div id="signupPage" class="page">
+        <div class="auth-card">
+            <div class="auth-logo">
+                <div class="logo-icon">👥</div>
+                <div class="logo-text">HRManage</div>
+            </div>
+
+            <div class="auth-eyebrow">Get Started</div>
+            <div class="auth-title">Create your<br>account</div>
+
+            <div class="auth-form">
+                <div class="auth-error" id="signupError">⚠️ Please fill in all fields</div>
+                <div class="auth-success" id="signupSuccess">✓ Account created! Signing you in…</div>
+
+                <div class="field">
+                    <label>Full Name</label>
+                    <div class="input-wrap">
+                        <span class="input-icon">👤</span>
+                        <input type="text" id="signupName" placeholder="Your full name">
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label>Email Address</label>
+                    <div class="input-wrap">
+                        <span class="input-icon">✉️</span>
+                        <input type="email" id="signupEmail" placeholder="you@company.com">
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label>Password</label>
+                    <div class="input-wrap">
+                        <span class="input-icon">🔒</span>
+                        <input type="password" id="signupPassword" placeholder="Create a password" oninput="checkStrength(this.value)">
+                    </div>
+                    <div class="strength-bar">
+                        <div class="strength-seg" id="seg1"></div>
+                        <div class="strength-seg" id="seg2"></div>
+                        <div class="strength-seg" id="seg3"></div>
+                        <div class="strength-seg" id="seg4"></div>
+                    </div>
+                    <div class="strength-label" id="strengthLabel"></div>
+                </div>
+
+                <div class="divider"></div>
+
+                <button class="btn-primary" id="signupBtn" onclick="handleSignup(event)">
+                    <div class="btn-text-inner">
+                        <div class="btn-spinner" id="signupSpinner"></div>
+                        <span id="signupBtnText">Create Account →</span>
+                    </div>
+                </button>
+
+                <div class="auth-switch">
+                    Already have an account?
+                    <button onclick="showPage('loginPage')">Sign in</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         MAIN PAGE (Employee List)
+    ══════════════════════════════════════ -->
+    <div id="mainPage" class="page" style="flex-direction:column">
+
+        <!-- Navbar -->
+        <nav class="topnav">
+            <div class="nav-logo">
+                <div class="nav-logo-icon">👥</div>
+                HRManage
+            </div>
+            <div class="nav-user">
+                <div class="nav-user-name">Signed in as <span id="navUserName">—</span></div>
+                <button class="btn-logout" onclick="handleLogout()">⎋ Logout</button>
+            </div>
+        </nav>
+
+        <div class="main-content">
+            <div class="page-label">HR Management</div>
+
+            <!-- Flash messages -->
+            {% if error %}
+            <div class="flash-messages">
+                <div class="alert alert-error">⚠️ {{ error }}</div>
+            </div>
+            {% endif %}
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="flash-messages" id="flashMessages">
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                    {% if category == 'success' %}✓{% else %}⚠️{% endif %} {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+
+            <!-- Header -->
+            <div class="header-row">
+                <h2>Employee List</h2>
+                <a href="/add" class="btn-add">+ Add Employee</a>
+            </div>
+
+            <!-- Stats -->
+            {% if employees %}
+            <div class="stats-row">
+                <div class="stat-chip">
+                    <div class="stat-dot"></div>
+                    <strong id="visibleCount">{{ employees|length }}</strong> employees
+                </div>
+            </div>
+
+            <!-- Search -->
+            <div class="search-wrap">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInput" placeholder="Search by name, email, department…">
+            </div>
+
+            <!-- Table -->
+            <div class="table-card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th data-col="0">ID <span class="sort-icon">↕</span></th>
+                            <th data-col="1">Name <span class="sort-icon">↕</span></th>
+                            <th data-col="2">Email <span class="sort-icon">↕</span></th>
+                            <th data-col="3">Phone <span class="sort-icon">↕</span></th>
+                            <th data-col="4">Department <span class="sort-icon">↕</span></th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        {% for emp in employees %}
+                        <tr style="animation-delay: {{ loop.index0 * 0.05 }}s">
+                            <td><div class="id-chip">{{ emp[0] }}</div></td>
+                            <td>
+                                <div class="name-cell">
+                                    <div class="avatar">{{ emp[1][0]|upper }}</div>
+                                    <span>{{ emp[1] }}</span>
+                                </div>
+                            </td>
+                            <td>{{ emp[2] }}</td>
+                            <td>{{ emp[3] }}</td>
+                            <td><span class="dept-badge">{{ emp[4] }}</span></td>
+                            <td>
+                                <div class="actions-cell">
+                                    <a href="/edit/{{ emp[0] }}" class="action-btn edit">✏️ Edit</a>
+                                    <a href="#" class="action-btn delete" data-href="/delete/{{ emp[0] }}" data-name="{{ emp[1] }}">🗑 Delete</a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        <tr class="no-results-row" id="noResults" style="display:none">
+                            <td colspan="6">No employees match your search.</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="demo-note">💡 In production, this table is populated by Flask/Jinja2</div>
+            </div>
+
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">👥</div>
+                <div class="empty-title">No employees yet</div>
+                <div class="empty-sub">Get started by adding your first team member.</div>
+                <a href="/add" class="btn-add">+ Add Employee</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Delete confirmation modal -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal">
+            <span class="modal-icon">🗑</span>
+            <div class="modal-title">Delete Employee?</div>
+            <div class="modal-sub" id="modalSub">This action cannot be undone.</div>
+            <div class="modal-actions">
+                <button class="btn-cancel" id="cancelDelete">Cancel</button>
+                <a href="#" class="btn-confirm-delete" id="confirmDelete">Delete</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ── Page router ──────────────────────────────
+        function showPage(id) {
+            document.querySelectorAll('.page').forEach(p => {
+                p.classList.remove('active');
+                p.style.display = 'none';
+            });
+            const el = document.getElementById(id);
+            el.style.display = id === 'mainPage' ? 'flex' : 'flex';
+            el.classList.add('active');
+
+            // Reset auth card animation
+            const card = el.querySelector('.auth-card');
+            if (card) {
+                card.style.animation = 'none';
+                requestAnimationFrame(() => {
+                    card.style.animation = '';
+                });
+            }
+        }
+
+        // ── Login ────────────────────────────────────
+        function handleLogin(e) {
+            addRipple(e);
+            const email    = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const errEl    = document.getElementById('loginError');
+            const spinner  = document.getElementById('loginSpinner');
+            const btnText  = document.getElementById('loginBtnText');
+
+            errEl.classList.remove('show');
+
+            if (!email || !password) {
+                errEl.querySelector ? null : null;
+                errEl.innerHTML = '⚠️ Please enter your email and password';
+                errEl.classList.add('show');
+                return;
+            }
+
+            // Show loading
+            spinner.style.display = 'block';
+            btnText.textContent = 'Signing in…';
+
+            setTimeout(() => {
+                spinner.style.display = 'none';
+                btnText.textContent = 'Sign In →';
+
+                // Accept any email + password (demo)
+                sessionStorage.setItem('hrUser', email);
+                document.getElementById('navUserName').textContent = email;
+                showPage('mainPage');
+            }, 900);
+        }
+
+        // ── Signup ───────────────────────────────────
+        function handleSignup(e) {
+            addRipple(e);
+            const name     = document.getElementById('signupName').value.trim();
+            const email    = document.getElementById('signupEmail').value.trim();
+            const password = document.getElementById('signupPassword').value;
+            const errEl    = document.getElementById('signupError');
+            const successEl = document.getElementById('signupSuccess');
+            const spinner  = document.getElementById('signupSpinner');
+            const btnText  = document.getElementById('signupBtnText');
+
+            errEl.classList.remove('show');
+            successEl.classList.remove('show');
+
+            if (!name || !email || !password) {
+                errEl.innerHTML = '⚠️ Please fill in all fields';
+                errEl.classList.add('show');
+                return;
+            }
+
+            if (password.length < 4) {
+                errEl.innerHTML = '⚠️ Password must be at least 4 characters';
+                errEl.classList.add('show');
+                return;
+            }
+
+            spinner.style.display = 'block';
+            btnText.textContent = 'Creating account…';
+
+            setTimeout(() => {
+                spinner.style.display = 'none';
+                btnText.textContent = 'Create Account →';
+                successEl.classList.add('show');
+
+                setTimeout(() => {
+                    sessionStorage.setItem('hrUser', email);
+                    document.getElementById('navUserName').textContent = email;
+                    showPage('mainPage');
+                }, 1200);
+            }, 1000);
+        }
+
+        // ── Logout ───────────────────────────────────
+        function handleLogout() {
+            sessionStorage.removeItem('hrUser');
+            // Reset login form
+            document.getElementById('loginEmail').value = '';
+            document.getElementById('loginPassword').value = '';
+            document.getElementById('loginError').classList.remove('show');
+            showPage('loginPage');
+        }
+
+        // ── Password strength ────────────────────────
+        function checkStrength(val) {
+            const segs  = [1,2,3,4].map(i => document.getElementById(`seg${i}`));
+            const label = document.getElementById('strengthLabel');
+            let score = 0;
+
+            if (val.length >= 6) score++;
+            if (val.length >= 10) score++;
+            if (/[A-Z]/.test(val) && /[0-9]/.test(val)) score++;
+            if (/[^a-zA-Z0-9]/.test(val)) score++;
+
+            const levels = ['', 'weak', 'fair', 'strong', 'strong'];
+            const labels = ['', 'Weak', 'Fair', 'Strong', 'Very strong'];
+            const colors = ['', '#ff6584', '#ff9f43', '#43e97b', '#43e97b'];
+
+            segs.forEach((s, i) => {
+                s.className = 'strength-seg';
+                if (i < score) s.classList.add(levels[score]);
+            });
+
+            label.textContent = val.length > 0 ? labels[score] : '';
+            label.style.color = colors[score];
+        }
+
+        // ── Ripple ───────────────────────────────────
+        function addRipple(e) {
+            const btn  = e.currentTarget;
+            const rect = btn.getBoundingClientRect();
+            const r    = document.createElement('span');
+            r.classList.add('ripple');
+            r.style.cssText = `width:${rect.width}px;height:${rect.width}px;left:${e.clientX - rect.left - rect.width/2}px;top:${e.clientY - rect.top - rect.width/2}px`;
+            btn.appendChild(r);
+            setTimeout(() => r.remove(), 600);
+        }
+
+        // ── Delete modal ─────────────────────────────
+        const modal      = document.getElementById('deleteModal');
+        const confirmBtn = document.getElementById('confirmDelete');
+        const cancelBtn  = document.getElementById('cancelDelete');
+        const modalSub   = document.getElementById('modalSub');
+
+        document.querySelectorAll('.action-btn.delete').forEach(btn => {
+            btn.addEventListener('click', e => {
+                e.preventDefault();
+                confirmBtn.href = btn.dataset.href;
+                modalSub.textContent = `Remove "${btn.dataset.name}" permanently?`;
+                modal.classList.add('show');
+            });
+        });
+
+        cancelBtn.addEventListener('click', () => modal.classList.remove('show'));
+        modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('show'); });
+
+        // ── Flash auto-dismiss ───────────────────────
+        setTimeout(() => {
+            document.querySelectorAll('.alert').forEach(el => {
+                el.classList.add('fade-out');
+                setTimeout(() => el.remove(), 600);
+            });
+        }, 3000);
+
+        // ── Live search ──────────────────────────────
+        const searchInput  = document.getElementById('searchInput');
+        const rows         = document.querySelectorAll('#tableBody tr:not(.no-results-row)');
+        const noResults    = document.getElementById('noResults');
+        const visibleCount = document.getElementById('visibleCount');
+
+        searchInput && searchInput.addEventListener('input', () => {
+            const q = searchInput.value.toLowerCase();
+            let visible = 0;
+            rows.forEach(row => {
+                const show = row.textContent.toLowerCase().includes(q);
+                row.style.display = show ? '' : 'none';
+                if (show) visible++;
+            });
+            noResults.style.display = visible === 0 ? '' : 'none';
+            if (visibleCount) visibleCount.textContent = visible;
+        });
+
+        // ── Column sort ──────────────────────────────
+        const headers = document.querySelectorAll('th[data-col]');
+        let lastCol = null, ascending = true;
+
+        headers.forEach(th => {
+            th.addEventListener('click', () => {
+                const col = parseInt(th.dataset.col);
+                ascending = lastCol === col ? !ascending : true;
+                lastCol   = col;
+
+                headers.forEach(h => { h.classList.remove('sort-asc','sort-desc'); h.querySelector('.sort-icon').textContent = '↕'; });
+                th.classList.add(ascending ? 'sort-asc' : 'sort-desc');
+                th.querySelector('.sort-icon').textContent = ascending ? '↑' : '↓';
+
+                const tbody  = document.getElementById('tableBody');
+                const rowArr = Array.from(rows);
+
+                rowArr.sort((a, b) => {
+                    const aT = a.cells[col]?.textContent.trim().toLowerCase() || '';
+                    const bT = b.cells[col]?.textContent.trim().toLowerCase() || '';
+                    return ascending ? aT.localeCompare(bT) : bT.localeCompare(aT);
+                });
+
+                rowArr.forEach((r, i) => { r.style.animationDelay = `${i * 0.03}s`; tbody.appendChild(r); });
+                tbody.appendChild(noResults);
+            });
+        });
+
+        // ── Auto-restore session ─────────────────────
+        window.addEventListener('DOMContentLoaded', () => {
+            const saved = sessionStorage.getItem('hrUser');
+            if (saved) {
+                document.getElementById('navUserName').textContent = saved;
+                showPage('mainPage');
+            }
+        });
+
+        // Enter key on login
+        document.getElementById('loginPassword').addEventListener('keydown', e => {
+            if (e.key === 'Enter') document.getElementById('loginBtn').click();
+        });
+
+        document.getElementById('loginEmail').addEventListener('keydown', e => {
+            if (e.key === 'Enter') document.getElementById('loginBtn').click();
+        });
+    </script>
+</body>
+</html>

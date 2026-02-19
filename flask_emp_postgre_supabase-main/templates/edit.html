@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Edit Employee</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --surface: #13131c;
+            --surface2: #1c1c2e;
+            --accent: #007bff;
+            --accent-glow: #3d9bff;
+            --accent2: #ff6584;
+            --accent3: #43e97b;
+            --text: #e8e8f0;
+            --muted: #6b6b8a;
+            --border: rgba(0, 123, 255, 0.2);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .bg-orbs {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.13;
+            animation: orbFloat linear infinite;
+        }
+
+        .orb-1 {
+            width: 500px; height: 500px;
+            background: var(--accent);
+            top: -100px; left: -100px;
+            animation-duration: 22s;
+        }
+
+        .orb-2 {
+            width: 400px; height: 400px;
+            background: #9b59ff;
+            bottom: -100px; right: -100px;
+            animation-duration: 28s;
+            animation-direction: reverse;
+        }
+
+        .orb-3 {
+            width: 280px; height: 280px;
+            background: var(--accent3);
+            top: 60%; left: 40%;
+            animation-duration: 18s;
+        }
+
+        @keyframes orbFloat {
+            0%   { transform: translate(0, 0) scale(1); }
+            25%  { transform: translate(30px, -30px) scale(1.05); }
+            50%  { transform: translate(-20px, 40px) scale(0.95); }
+            75%  { transform: translate(40px, 20px) scale(1.08); }
+            100% { transform: translate(0, 0) scale(1); }
+        }
+
+        .grid {
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(0,123,255,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,123,255,0.04) 1px, transparent 1px);
+            background-size: 60px 60px;
+            z-index: 0;
+        }
+
+        /* Scanning line effect */
+        .scan-line {
+            position: fixed;
+            left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(0,123,255,0.3), transparent);
+            z-index: 1;
+            animation: scanMove 6s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes scanMove {
+            0%   { top: -2px; opacity: 0; }
+            5%   { opacity: 1; }
+            95%  { opacity: 1; }
+            100% { top: 100vh; opacity: 0; }
+        }
+
+        .card-wrapper {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 520px;
+            padding: 20px;
+            animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-label {
+            font-family: 'Syne', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--accent-glow);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: slideUp 0.8s 0.1s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .card-label::before {
+            content: '';
+            width: 20px; height: 2px;
+            background: var(--accent-glow);
+        }
+
+        /* Edit badge */
+        .edit-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #ff9f43;
+            background: rgba(255, 159, 67, 0.1);
+            border: 1px solid rgba(255, 159, 67, 0.25);
+            border-radius: 20px;
+            padding: 4px 12px 4px 8px;
+            margin-left: auto;
+        }
+
+        .edit-badge-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: #ff9f43;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50%       { opacity: 0.5; transform: scale(0.8); }
+        }
+
+        .card-top-row {
+            display: flex;
+            align-items: center;
+        }
+
+        h2 {
+            font-family: 'Syne', sans-serif;
+            font-size: 38px;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 32px;
+            background: linear-gradient(135deg, #fff 40%, var(--accent-glow));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: slideUp 0.8s 0.15s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        form {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 36px;
+            position: relative;
+            overflow: hidden;
+            animation: slideUp 0.8s 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+            backdrop-filter: blur(20px);
+        }
+
+        form::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+        }
+
+        /* Change indicator bar */
+        .change-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 159, 67, 0.07);
+            border: 1px solid rgba(255, 159, 67, 0.18);
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin-bottom: 24px;
+            font-size: 13px;
+            color: #ff9f43;
+            transition: all 0.4s;
+            opacity: 0;
+        }
+
+        .change-bar.visible {
+            opacity: 1;
+        }
+
+        .change-bar-icon { font-size: 15px; }
+        .change-count {
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+        }
+
+        .field {
+            margin-bottom: 20px;
+            position: relative;
+            animation: slideUp 0.6s both;
+        }
+
+        .field:nth-child(2) { animation-delay: 0.3s; }
+        .field:nth-child(3) { animation-delay: 0.37s; }
+        .field:nth-child(4) { animation-delay: 0.44s; }
+        .field:nth-child(5) { animation-delay: 0.51s; }
+
+        label {
+            display: block;
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 8px;
+            transition: color 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .changed-pill {
+            font-size: 9px;
+            letter-spacing: 0.05em;
+            color: #ff9f43;
+            background: rgba(255, 159, 67, 0.12);
+            border-radius: 20px;
+            padding: 2px 8px;
+            opacity: 0;
+            transform: translateX(-4px);
+            transition: all 0.3s;
+        }
+
+        .changed-pill.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .field:focus-within label { color: var(--accent-glow); }
+
+        .input-wrap { position: relative; }
+
+        .input-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted);
+            font-size: 16px;
+            pointer-events: none;
+            transition: color 0.3s;
+            z-index: 1;
+        }
+
+        .field:focus-within .input-icon { color: var(--accent-glow); }
+
+        input, select {
+            width: 100%;
+            padding: 14px 14px 14px 42px;
+            background: var(--surface2);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        input::placeholder { color: var(--muted); font-size: 14px; }
+
+        input:focus, select:focus {
+            border-color: var(--accent);
+            background: rgba(0, 123, 255, 0.07);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.12),
+                        0 0 20px rgba(0, 123, 255, 0.08);
+            transform: translateY(-1px);
+        }
+
+        input.is-changed {
+            border-color: rgba(255, 159, 67, 0.4);
+        }
+
+        select option { background: #1c1c2e; }
+
+        .input-shimmer {
+            position: absolute;
+            inset: 0;
+            border-radius: 12px;
+            pointer-events: none;
+            background: linear-gradient(90deg, transparent, rgba(0,123,255,0.05) 50%, transparent);
+            background-size: 200% 100%;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        input:focus ~ .input-shimmer,
+        select:focus ~ .input-shimmer {
+            opacity: 1;
+            animation: shimmer 2s linear infinite;
+        }
+
+        @keyframes shimmer {
+            0%   { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .select-wrap::after {
+            content: '↓';
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted);
+            pointer-events: none;
+            font-size: 12px;
+        }
+
+        .select-wrap { position: relative; }
+
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+            margin: 24px 0;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            animation: slideUp 0.6s 0.58s both;
+        }
+
+        button {
+            flex: 1;
+            padding: 15px 24px;
+            background: linear-gradient(135deg, #0062cc, #0096ff);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-family: 'Syne', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            letter-spacing: 0.02em;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 123, 255, 0.4);
+        }
+
+        button:hover::before { opacity: 1; }
+        button:active { transform: translateY(0); }
+
+        .btn-text {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transform: scale(0);
+            animation: rippleAnim 0.6s linear;
+            pointer-events: none;
+        }
+
+        @keyframes rippleAnim {
+            to { transform: scale(4); opacity: 0; }
+        }
+
+        a {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 14px;
+            padding: 15px 18px;
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        a:hover {
+            color: var(--text);
+            border-color: rgba(255,255,255,0.15);
+            background: var(--surface2);
+        }
+
+        .particle {
+            position: fixed;
+            pointer-events: none;
+            border-radius: 50%;
+            animation: particleAnim 1s ease-out forwards;
+            z-index: 100;
+        }
+
+        @keyframes particleAnim {
+            0%   { transform: translate(0,0) scale(1); opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+    <div class="grid"></div>
+    <div class="scan-line"></div>
+
+    <div class="card-wrapper">
+        <div class="card-label" style="animation-delay:0.1s">
+            HR Management
+            <div class="card-top-row" style="margin-left:auto">
+                <div class="edit-badge">
+                    <div class="edit-badge-dot"></div>
+                    Editing
+                </div>
+            </div>
+        </div>
+        <h2>Edit Employee</h2>
+
+        <form method="POST" id="employeeForm">
+
+            <div class="change-bar" id="changeBar">
+                <span class="change-bar-icon">✏️</span>
+                <span><span class="change-count" id="changeCount">0</span> unsaved change(s)</span>
+            </div>
+
+            <div class="field">
+                <label>
+                    Full Name
+                    <span class="changed-pill" id="pill-name">Modified</span>
+                </label>
+                <div class="input-wrap">
+                    <span class="input-icon">👤</span>
+                    <input type="text" name="name" value="{{ employee[1] }}" required data-original="{{ employee[1] }}" id="inp-name">
+                    <div class="input-shimmer"></div>
+                </div>
+            </div>
+
+            <div class="field">
+                <label>
+                    Email Address
+                    <span class="changed-pill" id="pill-email">Modified</span>
+                </label>
+                <div class="input-wrap">
+                    <span class="input-icon">✉️</span>
+                    <input type="email" name="email" value="{{ employee[2] }}" required data-original="{{ employee[2] }}" id="inp-email">
+                    <div class="input-shimmer"></div>
+                </div>
+            </div>
+
+            <div class="field">
+                <label>
+                    Phone Number
+                    <span class="changed-pill" id="pill-phone">Modified</span>
+                </label>
+                <div class="input-wrap">
+                    <span class="input-icon">📞</span>
+                    <input type="text" name="phone" value="{{ employee[3] }}" required data-original="{{ employee[3] }}" id="inp-phone">
+                    <div class="input-shimmer"></div>
+                </div>
+            </div>
+
+            <div class="field">
+                <label>
+                    Department
+                    <span class="changed-pill" id="pill-dept">Modified</span>
+                </label>
+                <div class="input-wrap select-wrap">
+                    <span class="input-icon">🏢</span>
+                    <select name="department_id" required id="inp-dept" data-original="{{ employee[4] }}">
+                        {% for dept in departments %}
+                        <option value="{{ dept[0] }}" {% if dept[0] == employee[4] %}selected{% endif %}>{{ dept[1] }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="input-shimmer"></div>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="actions">
+                <button type="submit" id="submitBtn">
+                    <span class="btn-text">
+                        <span>Update Employee</span>
+                        <span>↗</span>
+                    </span>
+                </button>
+                <a href="/">← Back</a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Track changes
+        const tracked = [
+            { input: document.getElementById('inp-name'),  pill: document.getElementById('pill-name') },
+            { input: document.getElementById('inp-email'), pill: document.getElementById('pill-email') },
+            { input: document.getElementById('inp-phone'), pill: document.getElementById('pill-phone') },
+            { input: document.getElementById('inp-dept'),  pill: document.getElementById('pill-dept') },
+        ];
+
+        const changeBar   = document.getElementById('changeBar');
+        const changeCount = document.getElementById('changeCount');
+
+        function updateChanges() {
+            let changed = 0;
+            tracked.forEach(({ input, pill }) => {
+                const isChanged = input.value !== input.dataset.original;
+                pill.classList.toggle('show', isChanged);
+                input.classList.toggle('is-changed', isChanged);
+                if (isChanged) changed++;
+            });
+            changeCount.textContent = changed;
+            changeBar.classList.toggle('visible', changed > 0);
+        }
+
+        tracked.forEach(({ input }) => input.addEventListener('input', updateChanges));
+
+        // Ripple on button
+        document.getElementById('submitBtn').addEventListener('click', function(e) {
+            const btn  = this;
+            const rect = btn.getBoundingClientRect();
+            const r    = document.createElement('span');
+            r.classList.add('ripple');
+            r.style.cssText = `width:${rect.width}px;height:${rect.width}px;left:${e.clientX - rect.left - rect.width/2}px;top:${e.clientY - rect.top - rect.width/2}px`;
+            btn.appendChild(r);
+            setTimeout(() => r.remove(), 600);
+
+            const colors = ['#007bff','#3d9bff','#43e97b','#ff9f43'];
+            for (let i = 0; i < 20; i++) {
+                const p     = document.createElement('div');
+                p.classList.add('particle');
+                const angle = (i / 20) * 360;
+                const dist  = 80 + Math.random() * 120;
+                p.style.cssText = `
+                    width:${4 + Math.random() * 6}px;height:${4 + Math.random() * 6}px;
+                    left:${e.clientX}px;top:${e.clientY}px;
+                    background:${colors[i % colors.length]};
+                    --tx:${Math.cos(angle * Math.PI / 180) * dist}px;
+                    --ty:${Math.sin(angle * Math.PI / 180) * dist}px;
+                    animation-duration:${0.6 + Math.random() * 0.4}s;
+                `;
+                document.body.appendChild(p);
+                setTimeout(() => p.remove(), 1000);
+            }
+        });
+    </script>
+</body>
+</html>
